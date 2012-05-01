@@ -1,0 +1,15 @@
+Requirements
+===========================
+1) Mac OS X Lion (or greater)
+2) Xcode (xcodebuild will be used to build ogre and cegui + compillers and unix tools to build libogg, libvorbis)
+3) Cmake (will be used to build alure, mjin, mj)
+4) Doxygen (required to build ogre documentation)
+5) Graphviz (required to build ogre documentation)
+
+How to build
+===========================
+Full cycle build:
+./build.sh
+
+Fast build, skips existent dirs:
+FASTBUILD=Y ./build.sh
