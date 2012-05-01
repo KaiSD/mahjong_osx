@@ -88,8 +88,8 @@ function build_cegui {
 	tar xpf cegui_mk2-ce3f1bd08b58.tgz
 	echo "adding build dependencies"
 	tar xpf hacks/CEGUIdependencies.tgz -C cegui_mk2
-	echo "replacing xcode config"
-	cp hacks/CEGUI.xcodeproj cegui_mk2/projects/Xcode/CEGUI.xcodeproj/project.pbxproj
+	echo "patching"
+	cat hacks/CEGUI.patch | patch -d cegui_mk2 -p1
 	echo "compiling"
 	xcodebuild -project cegui_mk2/projects/Xcode/CEGUI.xcodeproj -target CEGUIOgreRenderer -configuration Release
 }
@@ -99,16 +99,20 @@ function build_mahjong {
 	wipe_dir ogs-mahjong-0.9.1-src || return 1
 	echo "unpacking"
 	tar xpf ogs-mahjong-0.9.1-src.tar.bz2
+	echo "patching"
+	cat hacks/MJIN.patch | patch -d ogs-mahjong-0.9.1-src -p1
 	echo "compiling"
 	cd ogs-mahjong-0.9.1-src/mjin
-	CC=clang CXX=clang++ cmake . \
+	# CC=clang CXX=clang++ cmake . \
+	cmake . \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_OSX_ARCHITECTURES=i386 \
 		-DALURE_INC_DIR=../../alure-1.2/include/AL \
 		-DOPENAL_INC_DIR=/System/Library/Frameworks/OpenAL.framework/Headers \
 		-DOGRE_INC_DIR=../../ogre/SDK/OSX/build/sdk/include/OGRE \
 		-DOIS_INC_DIR=../../ogre/SDK/OSX/build/sdk/include/ \
-		-DCEGUI_INC_DIR=../../cegui_mk2/cegui/include
+		-DCEGUI_INC_DIR=../../cegui_mk2/cegui/include \
+		-DMORE_INC_DIR="../../ogre/SDK/OSX/build/sdk/boost_1_42;../../ogre/Tools/XMLConverter/include"
 	make -j9
 	cd ../../
 }
