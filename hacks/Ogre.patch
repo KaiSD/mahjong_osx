@@ -1,0 +1,67 @@
+diff -r 8ba11f06dcaf SDK/OSX/make_osx.sh
+--- a/SDK/OSX/make_osx.sh	Sun Nov 06 22:17:44 2011 -0600
++++ b/SDK/OSX/make_osx.sh	Tue May 01 02:25:56 2012 +0400
+@@ -1,4 +1,5 @@
+ #!/bin/bash
++set -e
+ 
+ # Only build for i386, halves the size
+ ARCH="i386"
+@@ -22,7 +23,7 @@
+ echo Building API docs...
+ 
+ # Build docs explicitly since INSTALL doesn't include it
+-xcodebuild -project OGRE.xcodeproj -target doc -configuration Release -sdk macosx10.6 ARCHS=i386 GCC_VERSION=4.2 MACOSX_DEPLOYMENT_TARGET=10.5
++xcodebuild -project OGRE.xcodeproj -target doc -configuration Release -sdk macosx ARCHS=i386 MACOSX_DEPLOYMENT_TARGET=10.5
+ 
+ pushd api/html
+ 
+@@ -41,10 +42,13 @@
+ echo API generation done.
+ 
+ # Invoke Xcode build
+-xcodebuild -project OGRE.xcodeproj -target install -parallelizeTargets -configuration Release -sdk macosx10.6 ARCHS="i386 x86_64" GCC_VERSION=4.2 MACOSX_DEPLOYMENT_TARGET=10.5
++xcodebuild -project OGRE.xcodeproj -target install -parallelizeTargets -configuration Release -sdk macosx ARCHS="i386" MACOSX_DEPLOYMENT_TARGET=10.5
+ # Just release mode, debug is too big
+ #xcodebuild -project OGRE.xcodeproj -target install -configuration Debug -sdk macosx10.4 ARCHS=i386 GCC_VERSION=4.0 MACOSX_DEPLOYMENT_TARGET=10.4
+ 
++echo "Skipping samples and dmg package. Build finished."
++exit 0
++
+ echo Generating Samples Project...
+ 
+ pushd sdk
+@@ -106,6 +110,8 @@
+ 
+ echo End Copying SDK
+ 
++find sdk_contents -iname .DS_Store -exec rm -rf \{\} \;
++
+ # Also remove build directories.
+ find sdk_contents -iname *.build -exec rm -rf \{\} \;
+ 
+diff -r 8ba11f06dcaf Samples/Browser/CMakeLists.txt
+--- a/Samples/Browser/CMakeLists.txt	Sun Nov 06 22:17:44 2011 -0600
++++ b/Samples/Browser/CMakeLists.txt	Tue May 01 02:25:56 2012 +0400
+@@ -126,6 +126,12 @@
+ endif()
+ ogre_add_executable(SampleBrowser WIN32 ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
+ 
++IF(APPLE)
++   FIND_LIBRARY(QUARTZ_LIBRARY QuartzCore)
++   MARK_AS_ADVANCED (QUARTZ_LIBRARY)
++   SET(SAMPLE_LIBRARIES ${SAMPLE_LIBRARIES} ${QUARTZ_LIBRARY})
++ENDIF (APPLE)
++
+ target_link_libraries(SampleBrowser ${OGRE_LIBRARIES} ${OGRE_PLUGIN_LIBRARIES} ${OIS_LIBRARIES} ${SAMPLE_LIBRARIES})
+ 
+ # Add samples as dependencies
+@@ -201,7 +207,7 @@
+     if(NOT ${OGRE_FRAMEWORK_PATH} STREQUAL "" AND OGRE_SDK_BUILD)
+       set_target_properties(SampleBrowser PROPERTIES
+         COMPILE_FLAGS "-F${OGRE_FRAMEWORK_PATH}"
+-        LINK_FLAGS "-F${OGRE_FRAMEWORK_PATH} -framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo"
++        LINK_FLAGS "-F${OGRE_FRAMEWORK_PATH} -framework QuartzCore -framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo"
+       )
+     endif()
+ 	# also, symlink frameworks so .app is standalone
